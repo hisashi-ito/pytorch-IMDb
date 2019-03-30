@@ -36,5 +36,5 @@ if __name__ == '__main__':
      text = "I saw 'Liz and the blue bird' at Shinjuku Piccadilly."
      m = Tokenizer()
      ret = m.tokenize(text)
+     # ['I', 'saw', "'Liz", 'and', 'the', 'blue', 'bird', "'", 'at', 'Shinjuku', 'Piccadilly', '.']
      print(ret)
-     
