@@ -8,12 +8,71 @@
 # 更新履歴:
 #           2019.03.30 新規作成
 #
-class Corpus(object):
-    def __init__(self, path):
-        pass
+import pathlib
+import glob
+import torch
+from tokenizer import Tokenizer
 
-    def _load_vocab(self, vocab_file):
-        pass
+class Corpus(object):
+    def __init__(self, file):
+        self.vocab = self._load_vocab(file)
+        self.tokenizer = Tokenizer()
         
+    @property
+    def vocab_size(self):
+        return len(self.vocab)
     
+    # IMDb が用意してくている語彙辞書を読み込み
+    def _load_vocab(self, file):
+        voc = {}
+        f = open(file, "r")
+        for line in f:
+            try:
+                v = line.rstrip()
+                # index は 0 を明けておいて
+                # 1から開始する
+                voc[v] = len(voc) + 1
+            except ValueError:
+                continue
+        f.close()
+        return voc
+
+    # text 情報をidsリストへ変換する
+    # tokenize はnltk を利用
+    def text2ids(self, text):
+        tokens = self.tokenizer.tokenize(text)
+        # [TIPS] self.voccab に存在しない場合はindexを0にする
+        return [self.vocab.get(token, 0) for token in tokens]
+
+    # ids化されたtextをTensor化(0-paddingも実施)
+    def list2tensor(self, token_indexs, max_len = 100):
+        # 最初のtoken長を保存
+        n_tokens = len(token_indexs)
+        if len(token_indexs) > max_len:
+            token_indexs = token_indexs[0:max_len]
+        else:
+            # 0-padding 
+            token_indexs = token_indexs + [0] * (max_len - len(token_indexs))
+        # pytorch ではindxのidは'int64'にする必要がある
+        return torch.tensor(token_indexs, dtype=torch.int64), n_tokens
+
+    # coprus のファイルリストとラベルのタプルを生成
+    # mode は train, test のどちらか
+    def dataset(self, path, train = True):
+        if train:
+            target_path = path.joinpath("train")
+        else:
+            target_path = path.joinpath("test")
+        pos_files = sorted(glob.glob(str(target_path.joinpath("pos/*.txt")))) # positive な評価
+        neg_files = sorted(glob.glob(str(target_path.joinpath("neg/*.txt")))) # negative な評価
+        # 0:neg, 1:pos のラベルを付与
+        labeled_files = list(zip([0]*len(neg_files), neg_files)) + list(zip([1]*len(pos_files), pos_files))
+        return labeled_files
+
     
+if __name__ == '__main__':
+    voc_dic = "./aclImdb/imdb.vocab"
+    text = "I saw 'Liz and the blue bird' at Shinjuku Piccadilly."
+    c = Corpus(voc_dic)
+    token_indexs = c.text2ids(text)
+    print(c.list2tensor(token_indexs))
