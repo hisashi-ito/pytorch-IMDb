@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-#【model】
+#【network】
 #
-# 概要: model(network) 定義
+# 概要: network(model) 定義
 #
 # 更新履歴:
 #           2019.03.31 新規作成
@@ -33,8 +33,10 @@ class SequenceTaggingNet(nn.Module):
         #    2値分類なので出力次元を1とする
         self.linear = nn.Linear(hidden_size, 1)
 
-    # この関数はsequence毎に呼ばれることに注意
-    # [1,2,3] => 1,2,3 と3回 fowordされる
+    # 順伝搬関数
+    # 明示的に__call__ 関数と同じ意味で自動的に呼び出される
+    # chainer も昔は forward 関数だったがまだ残っている...
+    # step_size はsequence_len と同じ意味
     def forward(self, x, h0 = None, l = None):
         # 1) Embedding
         #    id を embeddingで多次元ベクトルに変換する

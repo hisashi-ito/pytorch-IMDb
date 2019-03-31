@@ -7,6 +7,7 @@
 #
 # 更新履歴:
 #          2019.3.31 新規作成
+#          2019.3.31 corpus インスタンスを引数からわたして利用
 #
 import pathlib
 import glob
@@ -16,11 +17,10 @@ from corpus import Corpus
 
 # pytorh のDatassetを継承して独自Datasetを作成
 class IMDBDateset(Dataset):
-    def __init__(self, dir_path, train = True, max_len = 100):
+    def __init__(self, dir_path, corpus, train = True, max_len = 100):
         self.max_len = max_len
         self.path = pathlib.Path(dir_path)
-        # train, testで双方でcorpusを利用しているので若干あれだけど...
-        self.corpus = Corpus(str(self.path.joinpath("imdb.vocab")))
+        self.corpus = corpus
         if train:
             target_path = self.path.joinpath("train")
         else:
