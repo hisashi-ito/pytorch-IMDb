@@ -30,6 +30,9 @@ class IMDBDateset(Dataset):
         neg_files = sorted(glob.glob(str(target_path.joinpath("neg/*.txt")))) # negative な評価
         # 0:neg, 1:pos のラベルを付与
         self.labeled_files = list(zip([0]*len(neg_files), neg_files)) + list(zip([1]*len(pos_files), pos_files))
+
+    def vocab_size(self):
+        return len(self.vocab)
         
     def __getitem__(self, idx):
         label, f = self.labeled_files[idx]

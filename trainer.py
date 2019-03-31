@@ -11,6 +11,7 @@
 import pathlib
 import tqdm
 import logging
+from statistics import mean
 import torch
 from torch import nn, optim
 from torch.utils.data import Dataset, DataLoader, TensorDataset
@@ -29,21 +30,21 @@ class Trainer(object):
         self.batch_size = int(batch_size)
         self.epoch_num = int(epoch_num)
         self.corpus = Corpus(str(self.path.joinpath("imdb.vocab")))
-
+        
         # dataset の定義
-        train_data = IMDBDateset(dir_path, self.corpus, train = True, max_len = int(max_len))
-        test_data  = IMDBDateset(dir_path, self.corpus, train = False, max_len = int(max_len))
+        self.train_data = IMDBDateset(dir_path, self.corpus, train = True, max_len = int(max_len))
+        self.test_data  = IMDBDateset(dir_path, self.corpus, train = False, max_len = int(max_len))
         
         # data loader の定義
-        self.train_loader = DataLoader(train_data, batch_size = batch_size, shuffle = True, num_workers = num_workers)
-        self.test_loader  = DataLoader(test_data,  batch_size = batch_size, shuffle = False, num_workers = num_workers)
-    
+        self.train_loader = DataLoader(self.train_data, batch_size = batch_size, shuffle = True, num_workers = num_workers)
+        self.test_loader  = DataLoader(self.test_data,  batch_size = batch_size, shuffle = False, num_workers = num_workers)
+        
         # モデルを作成
         # num_enbeddings = self.corpus.vocab_size+1 0次元も必要なので+1で初期化
         # LSTM は2-layerをstackする. ネットワークの設定は一旦固定
-        self.net = SequenceTaggingNet(self.corpus.vocab_size+1,
-                                      embedding_dim = 50,
-                                      hidden_size = 50,
+        self.net = SequenceTaggingNet(self.train_data.vocab_size()+1,
+                                      embedding_dim = 256,
+                                      hidden_size = 128,
                                       num_layers = 2,
                                       dropout = 0.2)
         # network(model)をGPUへ転送
@@ -51,7 +52,7 @@ class Trainer(object):
         self.opt = optim.Adam(self.net.parameters())
         # https://pytorch.org/docs/stable/nn.html#bceloss
         self.loss_func = nn.BCEWithLogitsLoss()
-
+                
     # 評価関数(eval)
     # 一応trainerの内部だけで動作するようにするので
     # インスタンス変数を適宜利用して動作するようにする
@@ -74,7 +75,7 @@ class Trainer(object):
                 ypreads.append(y_pred)
                 # 配列をflat にする
         ys = torch.cat(ys)
-        ypreads = ypreads.cat(ypreads)
+        ypreads = torch.cat(ypreads)
         # 推論が一致している場合は1 なのでそれをまとめる
         # 最後の個数で割って平均の正解率(accracy)を算出
         acc = (ys == ypreads).float().sum() / len(ys)    
@@ -88,7 +89,6 @@ class Trainer(object):
             losses = []
             # https://pytorch.org/docs/stable/nn.html
             self.net.train()
-            
             for x,y,l in tqdm.tqdm(self.train_loader):
                 x = x.to(self.GPU)
                 y = y.to(self.GPU)
@@ -108,8 +108,8 @@ class Trainer(object):
                 losses.append(loss.item())
                 
             # train 評価
-            train_acc = self.eval(self.train_loader)
+            train_acc = self.eval(self.train_loader, self.GPU)
             # validation 評価
-            val_acc = self.eval(self.test_loader)
+            val_acc = self.eval(self.test_loader, self.GPU)
             # 学習状況をloggerで出力
             self.logger.info("ecpoh: {}, loss: {}, train_acc: {}, val_acc: {}".format(str(epoch), str(mean(losses)), str(train_acc), str(val_acc)))
