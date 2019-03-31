@@ -9,7 +9,6 @@
 #           2019.03.30 新規作成
 #
 import pathlib
-import glob
 import torch
 from tokenizer import Tokenizer
 
@@ -56,20 +55,7 @@ class Corpus(object):
         # pytorch ではindxのidは'int64'にする必要がある
         return torch.tensor(token_indexs, dtype=torch.int64), n_tokens
 
-    # coprus のファイルリストとラベルのタプルを生成
-    # mode は train, test のどちらか
-    def dataset(self, path, train = True):
-        if train:
-            target_path = path.joinpath("train")
-        else:
-            target_path = path.joinpath("test")
-        pos_files = sorted(glob.glob(str(target_path.joinpath("pos/*.txt")))) # positive な評価
-        neg_files = sorted(glob.glob(str(target_path.joinpath("neg/*.txt")))) # negative な評価
-        # 0:neg, 1:pos のラベルを付与
-        labeled_files = list(zip([0]*len(neg_files), neg_files)) + list(zip([1]*len(pos_files), pos_files))
-        return labeled_files
 
-    
 if __name__ == '__main__':
     voc_dic = "./aclImdb/imdb.vocab"
     text = "I saw 'Liz and the blue bird' at Shinjuku Piccadilly."
