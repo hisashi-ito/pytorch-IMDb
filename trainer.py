@@ -112,4 +112,4 @@ class Trainer(object):
             # validation 評価
             val_acc = self.eval(self.test_loader, self.GPU)
             # 学習状況をloggerで出力
-            self.logger.info("ecpoh: {}, loss: {}, train_acc: {}, val_acc: {}".format(str(epoch), str(mean(losses)), str(train_acc), str(val_acc)))
+            self.logger.info("epoch: {}, loss: {}, train_acc: {}, val_acc: {}".format(str(epoch), str(mean(losses)), str(train_acc), str(val_acc)))
