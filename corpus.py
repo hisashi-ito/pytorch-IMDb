@@ -21,6 +21,9 @@ class Corpus(object):
     def vocab_size(self):
         return len(self.vocab)
     
+    def get_vocab(self):
+        return self.vocab
+    
     # IMDb が用意してくている語彙辞書を読み込み
     def _load_vocab(self, file):
         voc = {}

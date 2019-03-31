@@ -14,13 +14,13 @@ from torch import nn, optim
 class SequenceTaggingNet(nn.Module):
     def __init__(self,
                  num_embeddings,
-                 embedding_dim = 300,
-                 hidden_size = 128,
+                 embedding_dim = 50,
+                 hidden_size = 50,
                  num_layers = 1,
-                 dropout = 0.5):
+                 dropout = 0.2):
         super().__init__()
         # 1) Embedding layer
-        self.emb  = nn.Embedding(num_embeddings, embedding_dim, paddinx_idx = 0)
+        self.emb = nn.Embedding(num_embeddings, embedding_dim, padding_idx = 0)
 
         # 2) LSTM layer
         #    batch_first = True のoptionは重要で入力Tensorが
@@ -53,7 +53,7 @@ class SequenceTaggingNet(nn.Module):
         if l is not None:
             # [TIPS] 入力の長さがある場合はそれを利用(重要)
             #        0-paddingされている箇所を利用しない
-            x = x[list(range(len(x))), l-1,:]
+            x = x[list(range(len(x))),l-1,:]
         else:
             # 最後のステップを保存
             x = x[:,-1,:]

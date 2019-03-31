@@ -21,6 +21,7 @@ class IMDBDateset(Dataset):
         self.max_len = max_len
         self.path = pathlib.Path(dir_path)
         self.corpus = corpus
+        self.vocab = self.corpus.get_vocab()
         if train:
             target_path = self.path.joinpath("train")
         else:
@@ -30,20 +31,18 @@ class IMDBDateset(Dataset):
         # 0:neg, 1:pos のラベルを付与
         self.labeled_files = list(zip([0]*len(neg_files), neg_files)) + list(zip([1]*len(pos_files), pos_files))
         
-    def __getitme__(self, idx):
+    def __getitem__(self, idx):
         label, f = self.labeled_files[idx]
         text = open(f).read().lower()
-        ids = self.corpus.text2ids(text, self.vocab)
+        ids = self.corpus.text2ids(text)
         data, n_tokens = self.corpus.list2tensor(ids, self.max_len)
         return data, label, n_tokens
     
     def __len__(self):
-        len(self.labeled_files)
+        return len(self.labeled_files)
 
 
 if __name__ == '__main__':
     dir_path = "./aclImdb"
     train_data = IMDBDateset(dir_path, train = True, max_len = 100)
     test_data  = IMDBDateset(dir_path, train = False, max_len = 100)
-    
-    

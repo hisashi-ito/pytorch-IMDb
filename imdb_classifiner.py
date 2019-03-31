@@ -35,7 +35,10 @@ def main():
     if args.mode == "train":
         # 学習
         logger.info("train mode")
-        t = Trainer(logger, args.i, int(args.epoch_num), int(args.batch_size), int(args.worker))
+        t = Trainer(logger, args.i, int(args.epoch_num),
+                    batch_size = int(args.batch_size),
+                    num_workers = int(args.worker),
+                    max_len = 100)
         t.fit()
     elif args.mode == "evaluate":
         # evaluate 未実装
@@ -43,6 +46,7 @@ def main():
     else:
         # predict 未実装
         pass
+    logger.info("*** stop imdb_classifiner ***")
 
     
 if __name__ == '__main__':
