@@ -14,10 +14,10 @@ from torch import nn
 class SequenceTaggingNet(nn.Module):
     def __init__(self,
                  num_embeddings,
-                 embedding_dim = 50,
-                 hidden_size = 50,
-                 num_layers = 2,
-                 dropout = 0.2):
+                 embedding_dim = 256,
+                 hidden_size = 128,
+                 num_layers = 3,
+                 dropout = 0.5):
         super().__init__()
         
         # 1) Embedding layer

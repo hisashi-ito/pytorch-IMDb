@@ -38,7 +38,7 @@ def main():
         t = Trainer(logger, args.i, int(args.epoch_num),
                     batch_size = int(args.batch_size),
                     num_workers = int(args.worker),
-                    max_len = 100)
+                    max_len = 256)
         t.fit()
     elif args.mode == "evaluate":
         # evaluate 未実装
